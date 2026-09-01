@@ -1,1 +1,5 @@
-/* Add your custom extension styling here */
+/* Reduce padding on app tiles */
+.overview-tile {
+    border-radius: 8px;
+    padding: 2px;
+}
