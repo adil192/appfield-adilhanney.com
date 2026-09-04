@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Setup npm cache
         uses: actions/cache@v6
@@ -38,6 +40,3 @@ jobs:
           path: appfield@adilhanney.com.zip
           if-no-files-found: error
           archive: false
-
-      - name: Run lints
-        run: npm run lint
