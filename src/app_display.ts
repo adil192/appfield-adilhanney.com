@@ -120,7 +120,6 @@ export const AppFieldDisplay = GObject.registerClass(
             maybeFadeOut(() => {
                 // Free old resources
                 this._appField.remove_all_children();
-                for (const appIcon of this._appIcons) appIcon.destroy();
                 // Apply new data
                 this._appIcons = newAppIcons;
                 for (const appIcon of this._appIcons) this._appField.add_child(appIcon);
