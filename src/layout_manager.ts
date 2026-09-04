@@ -55,6 +55,16 @@ export const FieldLayoutManager = GObject.registerClass(
 
                 const x = col * child_size;
                 const y = row * child_size;
+
+                // Update icon size. This must come before `child.get_preferred_size()`
+                if (child instanceof AppDisplay.AppIcon) {
+                    /** Keep this in sync with .appfield-tile in stylesheet.css */
+                    const padding = 2 as const;
+                    child.icon.setIconSize(
+                        Math.floor(child_size) - padding * 2
+                    );
+                }
+
                 const [, , naturalWidth, naturalHeight] = child.get_preferred_size();
 
                 childBox.set_origin(
@@ -66,14 +76,6 @@ export const FieldLayoutManager = GObject.registerClass(
                     Math.max(child_size, naturalHeight),
                 );
                 child.allocate(childBox);
-
-                if (child instanceof AppDisplay.AppIcon) {
-                    /** Keep this in sync with .appfield-tile in stylesheet.css */
-                    const padding = 2 as const;
-                    child.icon.setIconSize(
-                        Math.floor(child_size) - padding * 2
-                    );
-                }
             }
         }
 
