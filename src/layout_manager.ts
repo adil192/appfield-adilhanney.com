@@ -138,6 +138,7 @@ export const FieldLayoutManager = GObject.registerClass(
          * The result will be roughly the same aspect ratio as [aspectRatio].
          */
         static _getColsRows(children: number, aspectRatio: number): [cols: number, rows: number] {
+            if (children <= 0) return [1, 1];
             const estimatedCols = Math.ceil(Math.sqrt(children * aspectRatio));
             const rows = Math.ceil(children / estimatedCols);
             const cols = Math.ceil(children / rows);
