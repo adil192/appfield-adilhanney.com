@@ -105,8 +105,15 @@ export const FieldLayoutManager = GObject.registerClass(
                 return this._lastSizes;
             }
 
-            const [cols, rows] = FieldLayoutManager._getColsRows(num_children, width / height);
-            const child_size = Math.min(width / cols, height / rows);
+            const min_margins = { horizontal: 16, vertical: 4 };
+            const [cols, rows] = FieldLayoutManager._getColsRows(
+                num_children,
+                (width - min_margins.horizontal) / (height - min_margins.vertical),
+            );
+            const child_size = Math.min(
+                (width - min_margins.horizontal) / cols,
+                (height - min_margins.vertical) / rows,
+            );
 
             const margins = {
                 horizontal: (width - child_size * cols) / 2,
