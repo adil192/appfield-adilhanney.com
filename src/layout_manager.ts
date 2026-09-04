@@ -22,6 +22,8 @@ export const FieldLayoutManager = GObject.registerClass(
             cols: number,
             /** The number of rows of children. */
             rows: number,
+            /** Margins to center the app grid. */
+            margins: { horizontal: number, vertical: number },
         };
 
         override _init() {
@@ -31,6 +33,7 @@ export const FieldLayoutManager = GObject.registerClass(
                 child_size: 64,
                 cols: 1,
                 rows: 1,
+                margins: { horizontal: 0, vertical: 0 },
             };
         }
 
@@ -45,7 +48,7 @@ export const FieldLayoutManager = GObject.registerClass(
 
         override vfunc_allocate(container: Clutter.Actor, allocation: Clutter.ActorBox) {
             const children = container.get_children();
-            const { child_size, cols } = this._computeSizes(container, allocation.get_width(), allocation.get_height(), children.length);
+            const { child_size, cols, margins } = this._computeSizes(container, allocation.get_width(), allocation.get_height(), children.length);
 
             const childBox = new Clutter.ActorBox();
             for (let i = 0; i < children.length; ++i) {
@@ -53,8 +56,8 @@ export const FieldLayoutManager = GObject.registerClass(
                 const col = i % cols;
                 const row = Math.floor(i / cols);
 
-                const x = col * child_size;
-                const y = row * child_size;
+                const x = margins.horizontal + col * child_size;
+                const y = margins.vertical + row * child_size;
 
                 // Update icon size. This must come before `child.get_preferred_size()`
                 if (child instanceof AppDisplay.AppIcon) {
@@ -105,11 +108,17 @@ export const FieldLayoutManager = GObject.registerClass(
             const [cols, rows] = FieldLayoutManager._getColsRows(num_children, width / height);
             const child_size = Math.min(width / cols, height / rows);
 
+            const margins = {
+                horizontal: (width - child_size * cols) / 2,
+                vertical: (height - child_size * rows) / 2,
+            };
+
             return this._lastSizes = {
                 cache_key: { width, height, num_children },
                 child_size,
                 cols,
                 rows,
+                margins,
             };
         }
 
