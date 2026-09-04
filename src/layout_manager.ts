@@ -27,7 +27,7 @@ export const FieldLayoutManager = GObject.registerClass(
         override _init() {
             super._init();
             this._lastSizes = {
-                cache_key: { width: -1, height: -1, num_children: 0, },
+                cache_key: { width: null, height: null, num_children: 0, },
                 child_size: 64,
                 cols: 1,
                 rows: 1,
