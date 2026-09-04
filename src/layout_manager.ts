@@ -38,26 +38,30 @@ export const FieldLayoutManager = GObject.registerClass(
         }
 
         override vfunc_get_preferred_width(container: Clutter.Actor, for_height: number): [minimum: number, natural: number] {
-            const { cache_key, child_size } = this._computeSizes(container, undefined, for_height);
-            return [cache_key.width ?? child_size, cache_key.width ?? child_size];
+            const { child_size, cols } = this._computeSizes(container, undefined, for_height);
+            const width = child_size * cols;
+            return [width, width];
         }
         override vfunc_get_preferred_height(container: Clutter.Actor, for_width: number): [minimum: number, natural: number] {
-            const { cache_key, child_size } = this._computeSizes(container, for_width, undefined);
-            return [cache_key.height ?? child_size, cache_key.height ?? child_size];
+            const { child_size, rows } = this._computeSizes(container, for_width, undefined);
+            const height = child_size * rows;
+            return [height, height];
         }
 
         override vfunc_allocate(container: Clutter.Actor, allocation: Clutter.ActorBox) {
             const children = container.get_children();
-            const { child_size, cols, margins } = this._computeSizes(container, allocation.get_width(), allocation.get_height(), children.length);
+            const { child_size, rows, margins } = this._computeSizes(container, allocation.get_width(), allocation.get_height(), children.length);
 
             const childBox = new Clutter.ActorBox();
             for (let i = 0; i < children.length; ++i) {
                 const child = children[i];
-                const col = i % cols;
-                const row = Math.floor(i / cols);
+                const col = Math.floor(i / rows);
+                const row = i % rows;
 
                 const x = margins.horizontal + col * child_size;
-                const y = margins.vertical + row * child_size;
+                const y = col % 2 == 0
+                    ? margins.vertical + row * child_size
+                    : margins.vertical + (rows - 1 - row) * child_size
 
                 // Update icon size. This must come before `child.get_preferred_size()`
                 if (child instanceof AppDisplay.AppIcon) {
@@ -87,13 +91,13 @@ export const FieldLayoutManager = GObject.registerClass(
                 if (container.has_allocation())
                     width = container.allocation.get_width();
                 else
-                    width = this._lastSizes.cache_key.width ?? 1280;
+                    width = this._lastSizes.cache_key.width ?? 1920;
             }
             if (!height || height <= 0) {
                 if (container.has_allocation())
                     height = container.allocation.get_height();
                 else
-                    height = this._lastSizes.cache_key.height ?? 720;
+                    height = this._lastSizes.cache_key.height ?? 1080;
             }
 
             width = Math.round(width);
@@ -105,14 +109,14 @@ export const FieldLayoutManager = GObject.registerClass(
                 return this._lastSizes;
             }
 
-            const min_margins = { horizontal: 16, vertical: 4 };
+            const min_margins = { horizontal: 8, vertical: 2 };
             const [cols, rows] = FieldLayoutManager._getColsRows(
                 num_children,
-                (width - min_margins.horizontal) / (height - min_margins.vertical),
+                (width - min_margins.horizontal * 2) / (height - min_margins.vertical * 2),
             );
             const child_size = Math.min(
-                (width - min_margins.horizontal) / cols,
-                (height - min_margins.vertical) / rows,
+                (width - min_margins.horizontal * 2) / cols,
+                (height - min_margins.vertical * 2) / rows,
             );
 
             const margins = {
@@ -134,8 +138,9 @@ export const FieldLayoutManager = GObject.registerClass(
          * The result will be roughly the same aspect ratio as [aspectRatio].
          */
         static _getColsRows(children: number, aspectRatio: number): [cols: number, rows: number] {
-            const cols = Math.ceil(Math.sqrt(children * aspectRatio));
-            const rows = Math.ceil(children / cols);
+            const estimatedCols = Math.ceil(Math.sqrt(children * aspectRatio));
+            const rows = Math.ceil(children / estimatedCols);
+            const cols = Math.ceil(children / rows);
             return [cols, rows];
         }
     }
