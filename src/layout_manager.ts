@@ -7,10 +7,15 @@ import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 export const FieldLayoutManager = GObject.registerClass(
     class FieldLayoutManager extends Clutter.LayoutManager {
         declare _lastSizes: {
-            /** Max width of the container. Used to invalidate cache. */
-            for_width: number | null,
-            /** Max height of the container. Used to invalidate cache. */
-            for_height: number | null,
+            /** This cache key must match for the other data to be up to date. */
+            cache_key: {
+                /** Max width of the container. */
+                width: number | null,
+                /** Max height of the container. */
+                height: number | null,
+                /** Number of children. */
+                num_children: number,
+            },
             /** The computed size of each child. */
             child_size: number,
             /** The number of columns of children. */
@@ -22,8 +27,7 @@ export const FieldLayoutManager = GObject.registerClass(
         override _init() {
             super._init();
             this._lastSizes = {
-                for_width: -1,
-                for_height: -1,
+                cache_key: { width: -1, height: -1, num_children: 0, },
                 child_size: 64,
                 cols: 1,
                 rows: 1,
@@ -31,17 +35,17 @@ export const FieldLayoutManager = GObject.registerClass(
         }
 
         override vfunc_get_preferred_width(container: Clutter.Actor, for_height: number): [minimum: number, natural: number] {
-            const { for_width, child_size } = this._computeSizes(container, undefined, for_height);
-            return [for_width ?? child_size, for_width ?? child_size];
+            const { cache_key, child_size } = this._computeSizes(container, undefined, for_height);
+            return [cache_key.width ?? child_size, cache_key.width ?? child_size];
         }
         override vfunc_get_preferred_height(container: Clutter.Actor, for_width: number): [minimum: number, natural: number] {
-            const { for_height, child_size } = this._computeSizes(container, for_width, undefined);
-            return [for_height ?? child_size, for_height ?? child_size];
+            const { cache_key, child_size } = this._computeSizes(container, for_width, undefined);
+            return [cache_key.height ?? child_size, cache_key.height ?? child_size];
         }
 
         override vfunc_allocate(container: Clutter.Actor, allocation: Clutter.ActorBox) {
             const children = container.get_children();
-            const { child_size, cols } = this._computeSizes(container, allocation.get_width(), allocation.get_height());
+            const { child_size, cols } = this._computeSizes(container, allocation.get_width(), allocation.get_height(), children.length);
 
             const childBox = new Clutter.ActorBox();
             for (let i = 0; i < children.length; ++i) {
@@ -73,32 +77,34 @@ export const FieldLayoutManager = GObject.registerClass(
             }
         }
 
-        _computeSizes(container: Clutter.Actor, width?: number, height?: number): typeof FieldLayoutManager.prototype._lastSizes {
+        _computeSizes(container: Clutter.Actor, width?: number, height?: number, num_children?: number): typeof this._lastSizes {
             if (!width || width <= 0) {
                 if (container.has_allocation())
                     width = container.allocation.get_width();
                 else
-                    width = this._lastSizes.for_width ?? 1280;
+                    width = this._lastSizes.cache_key.width ?? 1280;
             }
             if (!height || height <= 0) {
                 if (container.has_allocation())
                     height = container.allocation.get_height();
                 else
-                    height = this._lastSizes.for_height ?? 720;
+                    height = this._lastSizes.cache_key.height ?? 720;
             }
 
             width = Math.round(width);
             height = Math.round(height);
+            num_children ??= container.get_n_children();
+            if (width === this._lastSizes.cache_key.width &&
+                height == this._lastSizes.cache_key.height &&
+                num_children == this._lastSizes.cache_key.num_children) {
+                return this._lastSizes;
+            }
 
-            if (width === this._lastSizes.for_width && height === this._lastSizes.for_height) return this._lastSizes;
-
-            const children = container.get_children();
-            const [cols, rows] = FieldLayoutManager._getColsRows(children.length, width / height);
+            const [cols, rows] = FieldLayoutManager._getColsRows(num_children, width / height);
             const child_size = Math.min(width / cols, height / rows);
 
             return this._lastSizes = {
-                for_width: width,
-                for_height: height,
+                cache_key: { width, height, num_children },
                 child_size,
                 cols,
                 rows,
@@ -112,7 +118,6 @@ export const FieldLayoutManager = GObject.registerClass(
         static _getColsRows(children: number, aspectRatio: number): [cols: number, rows: number] {
             const cols = Math.ceil(Math.sqrt(children * aspectRatio));
             const rows = Math.ceil(children / cols);
-
             return [cols, rows];
         }
     }
