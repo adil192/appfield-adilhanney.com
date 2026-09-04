@@ -153,6 +153,7 @@ export const AppFieldDisplay = GObject.registerClass(
                     icon = new FieldAppIcon(app, {
                         syncTooltip: () => this._syncTooltip(icon!),
                     });
+                    this._items.set(appId, icon);
                 }
                 appIcons.push(icon);
             }
@@ -320,7 +321,7 @@ export const AppFieldDisplay = GObject.registerClass(
         }
         _moveItem(_item: AppDisplay.AppViewItem, _newPage: number, _newPosition: number) { }
         handleDragOver(_source: any): DND.DragMotionResult { return DND.DragMotionResult.NO_DROP; }
-        getAllItems(): AppDisplay.AppViewItem[] { return this._orderedItems; }
+        getAllItems(): typeof FieldAppIcon.prototype[] { return this._orderedItems; }
         selectApp(id: string): void {
             const item = this._items.get(id);
             if (!item) {
