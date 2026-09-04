@@ -204,9 +204,16 @@ export const AppFieldDisplay = GObject.registerClass(
             this._redisplay();
         }
         _removePlaceholder() {
-            if (!this._placeholder) return;
-            this._placeholder.undoScaleAndFade();
+            const placeholder = this._placeholder;
+            if (!placeholder) return;
+            placeholder.undoScaleAndFade();
             this._placeholder = null;
+
+            const signalId = this.connect('view-loaded', () => {
+                this.disconnect(signalId);
+                placeholder.destroy();
+            });
+
             this._redisplay();
         }
 
