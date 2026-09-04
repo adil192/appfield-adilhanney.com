@@ -38,14 +38,14 @@ export const FieldLayoutManager = GObject.registerClass(
         }
 
         override vfunc_get_preferred_width(container: Clutter.Actor, for_height: number): [minimum: number, natural: number] {
-            const { child_size, cols } = this._computeSizes(container, undefined, for_height);
+            const { child_size, cols, margins } = this._computeSizes(container, undefined, for_height);
             const width = child_size * cols;
-            return [width, width];
+            return [width, width + margins.horizontal * 2];
         }
         override vfunc_get_preferred_height(container: Clutter.Actor, for_width: number): [minimum: number, natural: number] {
-            const { child_size, rows } = this._computeSizes(container, for_width, undefined);
+            const { child_size, rows, margins } = this._computeSizes(container, for_width, undefined);
             const height = child_size * rows;
-            return [height, height];
+            return [height, height + margins.vertical * 2];
         }
 
         override vfunc_allocate(container: Clutter.Actor, allocation: Clutter.ActorBox) {
