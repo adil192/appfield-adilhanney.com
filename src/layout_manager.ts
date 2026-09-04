@@ -64,7 +64,7 @@ export const FieldLayoutManager = GObject.registerClass(
                 child.allocate(childBox);
 
                 if (child instanceof AppDisplay.AppIcon) {
-                    /** Keep this in sync with .overview-tile in stylesheet.css */
+                    /** Keep this in sync with .appfield-tile in stylesheet.css */
                     const padding = 2 as const;
                     child.icon.setIconSize(
                         Math.floor(child_size) - padding * 2

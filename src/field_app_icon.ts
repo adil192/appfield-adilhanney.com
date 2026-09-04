@@ -32,6 +32,7 @@ export const FieldAppIcon = GObject.registerClass(class FieldAppIcon extends App
         iconParams.isDraggable = false;
         iconParams.showLabel = false;
         super._init(app, iconParams);
+        this.style_class = 'overview-tile appfield-tile';
 
         this._tooltip = new St.Label({ text: this._name, style_class: 'dash-label' });
         this._tooltip.hide();
