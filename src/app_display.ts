@@ -132,8 +132,10 @@ export const AppFieldDisplay = GObject.registerClass(
                 }
                 // Apply new data
                 this._appIcons = nextAppIcons;
-                for (const appIcon of freshAppIcons) {
-                    this._appField.add_child(appIcon);
+                for (let i = 0; i < nextAppIcons.length; ++i) {
+                    const appIcon = nextAppIcons[i];
+                    if (!freshAppIcons.includes(appIcon)) continue;
+                    this._appField.insert_child_at_index(appIcon, i);
                     this._items.set(appIcon.id, appIcon);
                 }
                 // Fade back in
