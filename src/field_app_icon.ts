@@ -6,6 +6,7 @@ import Shell from 'gi://Shell';
 import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 import * as AppMenu from 'resource:///org/gnome/shell/ui/appMenu.js';
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import type * as Dash from 'resource:///org/gnome/shell/ui/dash.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
@@ -29,7 +30,6 @@ export const FieldAppIcon = GObject.registerClass(class FieldAppIcon extends App
 		const syncTooltip = iconParams.syncTooltip!;
 		delete iconParams.syncTooltip;
 
-		iconParams.isDraggable = false;
 		iconParams.showLabel = false;
 		super._init(app, iconParams);
 		this.style_class = 'overview-tile appfield-tile';
@@ -75,6 +75,23 @@ export const FieldAppIcon = GObject.registerClass(class FieldAppIcon extends App
 		this.emit('sync-tooltip');
 
 		return false;
+	}
+
+	/** Disable dragging icon onto other icon to create folders. Not supported with app field. */
+	override _setHoveringByDnd(_hovering: boolean) { }
+	override _showFolderPreview() { }
+	override _hideFolderPreview() { }
+	override _canAccept(_source: any) { return false; }
+	override handleDragOver(_source: any, _actor: St.Widget, _x: number) { return DND.DragMotionResult.NO_DROP; }
+	override acceptDrop(source: any, _actor: St.Widget, _x: number) { return this._canAccept(source); }
+	override _withinLeeways(_x: number) {
+		// Leeways are used to drag icon into next/previous page.
+		// We don't have pages, so always return false.
+		return false;
+	}
+	override getDragActor() {
+		// Override to use our icon size rather than dash's default size
+		return this.app.create_icon_texture(this.icon.iconSize) as St.Icon;
 	}
 
 	/**
