@@ -102,13 +102,19 @@ export const AppFieldDisplay = GObject.registerClass(
         }
 
         _redisplay() {
-            const newAppIcons = this._loadApps();
+            const prevAppIcons = this._appIcons;
+            const prevAppIds = prevAppIcons.map(icon => icon.id);
+            const nextAppIcons = this._loadApps();
+            const nextAppIds = nextAppIcons.map(icon => icon.id);
+
+            const staleAppIcons = prevAppIcons.filter(icon => !nextAppIds.includes(icon.id));
+            const freshAppIcons = nextAppIcons.filter(icon => !prevAppIds.includes(icon.id));
 
             const maybeFadeOut = (onComplete: () => void) => {
-                if (this._appIcons.length === newAppIcons.length) {
-                    // Probably same icons, don't fade out or fade in
+                if (!staleAppIcons.length && !freshAppIcons.length) {
+                    // Same icons, don't fade out or fade in
                     onComplete();
-                } else if (!this._appIcons.length) {
+                } else if (!prevAppIcons.length) {
                     // Apps list was empty, nothing to fade out
                     this._appField.opacity = 0;
                     onComplete();
@@ -119,10 +125,17 @@ export const AppFieldDisplay = GObject.registerClass(
             }
             maybeFadeOut(() => {
                 // Free old resources
-                this._appField.remove_all_children();
+                for (const appIcon of staleAppIcons) {
+                    this._appField.remove_child(appIcon);
+                    this._items.delete(appIcon.id);
+                    appIcon.destroy();
+                }
                 // Apply new data
-                this._appIcons = newAppIcons;
-                for (const appIcon of this._appIcons) this._appField.add_child(appIcon);
+                this._appIcons = nextAppIcons;
+                for (const appIcon of freshAppIcons) {
+                    this._appField.add_child(appIcon);
+                    this._items.set(appIcon.id, appIcon);
+                }
                 // Fade back in
                 fadeIn(this._appField);
                 this.emit('view-loaded');
