@@ -1,8 +1,8 @@
 {
-  "name": "App Field",
-  "description": "View all your apps at once in the app grid",
-  "uuid": "appfield@adilhanney.com",
-  "shell-version": [
-    "51"
-  ]
+	"name": "App Field",
+	"description": "View all your apps at once in the app grid",
+	"uuid": "appfield@adilhanney.com",
+	"shell-version": [
+		"51"
+	]
 }

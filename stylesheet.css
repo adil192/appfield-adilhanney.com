@@ -1,5 +1,5 @@
 /* Reduce padding on app tiles */
 .appfield-tile {
-    border-radius: 8px;
-    padding: 2px;
+	border-radius: 8px;
+	padding: 2px;
 }
