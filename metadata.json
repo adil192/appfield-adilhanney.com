@@ -1,7 +1,13 @@
 {
 	"name": "App Field",
-	"description": "View all your apps at a glance in the app grid",
 	"uuid": "appfield@adilhanney.com",
+	"description": "View all your apps at a glance in the app grid.\n\nFeatures:\n* No pages or scrolling: see all your apps at once.\n* Automatically resizes the grid to fit all your apps.\n* Apps are sorted alphabetically from left to right.\n* Hover over an app's icon to see its name.\n* Drag an icon into a workspace preview to open in that workspace, just like vanilla GNOME.\n* Written in Typescript for type safety and reliability.",
+	"url": "https://github.com/adil192/appfield-adilhanney.com/",
+	"donations": {
+		"github": "adil192",
+		"liberapay": "adil192",
+		"paypal": "adilhanney"
+	},
 	"shell-version": [
 		"50",
 		"51"
