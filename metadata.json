@@ -3,6 +3,7 @@
 	"description": "View all your apps at once in the app grid",
 	"uuid": "appfield@adilhanney.com",
 	"shell-version": [
+		"50",
 		"51"
 	]
 }
