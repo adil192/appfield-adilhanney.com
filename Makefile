@@ -3,7 +3,7 @@ DOMAIN=adilhanney.com
 
 .PHONY: compile bundle install debug clean
 
-compile: dist/extension.js dist/metadata.json dist/stylesheet.css dist/LICENSE
+compile: dist/extension.js dist/metadata.json dist/stylesheet.css dist/LICENSE dist/README.md
 
 bundle: $(NAME)@$(DOMAIN).zip
 $(NAME)@$(DOMAIN).zip: compile
@@ -35,3 +35,6 @@ dist/stylesheet.css: stylesheet.css
 dist/LICENSE: LICENSE
 	@mkdir -p dist/
 	@cp LICENSE dist/
+dist/README.md: README.md
+	@mkdir -p dist/
+	@cp README.md dist/
