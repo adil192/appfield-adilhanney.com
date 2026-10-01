@@ -5,7 +5,7 @@
 	"private": true,
 	"sideEffects": false,
 	"devDependencies": {
-		"@girs/gjs": "^4.1.0",
+		"@girs/gjs": "^5.4.0",
 		"@girs/gnome-shell": "^50.0.4",
 		"typescript": "^7.0.2"
 	}
