@@ -23,7 +23,14 @@ The following features are not planned for this extension:
 
 ## Install
 
-The extension currently needs to be built from source.
+Get App Field on the
+[GNOME Extensions website](https://extensions.gnome.org/extension/10915/app-field/)
+or through
+[Extension Manager](https://flathub.org/en/apps/com.mattjakeman.ExtensionManager):
+
+[![Get it on GNOME Extensions](doc/get-it-on-ego-badge.svg)](https://extensions.gnome.org/extension/10915/app-field/)
+
+## Build from source
 
 Install `npm` (Node.js) then run these commands in a terminal:
 
