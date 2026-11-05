@@ -191,6 +191,15 @@ export const AppFieldDisplay = GObject.registerClass(
 		override destroy() {
 			this._disconnectSignals();
 
+			if (this._showTooltipTimeoutId) {
+				GLib.source_remove(this._showTooltipTimeoutId);
+				this._showTooltipTimeoutId = undefined;
+			}
+			if (this._resetTooltipShowingTimeoutId) {
+				GLib.source_remove(this._resetTooltipShowingTimeoutId);
+				this._resetTooltipShowingTimeoutId = undefined;
+			}
+
 			for (const appIcon of this._appIcons) appIcon.destroy();
 
 			super.destroy();
