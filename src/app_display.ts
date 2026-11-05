@@ -228,6 +228,10 @@ export const AppFieldDisplay = GObject.registerClass(
 			this._redisplay();
 		}
 
+		/**
+		 * Mirrors {@link Dash._syncLabel}:
+		 * https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/gnome-50/js/ui/dash.js#L538
+		 */
 		_syncTooltip(appIcon: typeof FieldAppIcon.prototype) {
 			if (appIcon.shouldShowTooltip()) {
 				if (this._resetTooltipShowingTimeoutId) {
@@ -250,7 +254,7 @@ export const AppFieldDisplay = GObject.registerClass(
 					this._showTooltipTimeoutId = undefined;
 				}
 				appIcon.hideTooltip();
-				if (this._tooltipShowing) {
+				if (this._tooltipShowing && !this._resetTooltipShowingTimeoutId) {
 					this._resetTooltipShowingTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, DASH_ITEM_HOVER_TIMEOUT, () => {
 						this._tooltipShowing = false;
 						this._resetTooltipShowingTimeoutId = undefined;
