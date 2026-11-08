@@ -175,7 +175,7 @@ export const AppFieldDisplay = GObject.registerClass(
 				appIcons.push(this._placeholder);
 			return appIcons;
 		}
-		_compareItems<T extends AppDisplay.AppViewItem | { get_name(): string | null; }>(a: T, b: T): number {
+		_compareItems<T extends AppDisplay.AppViewItem | GioUnix.DesktopAppInfo>(a: T, b: T): number {
 			return this._collator.compare(a.get_name()!, b.get_name()!);
 		}
 
@@ -308,15 +308,15 @@ export const AppFieldDisplay = GObject.registerClass(
 		goToPage(_pageNumber: number, _animate?: boolean) { }
 		acceptDrop(_source: any) { return false; }
 		declare readonly _grid: AppDisplay.AppGrid;
-		declare readonly _scrollView: St.ScrollView<Clutter.Actor<Clutter.LayoutManager, Clutter.Content>>;
+		declare readonly _scrollView: St.ScrollView;
 		declare readonly _canScroll = false;
 		declare readonly _scrollTimeoutId = 0;
 		declare readonly _adjustment: St.Adjustment;
 		declare readonly _pageIndicators: undefined;
-		declare readonly _nextPageIndicator: St.Widget<Clutter.LayoutManager, Clutter.Content>;
-		declare readonly _prevPageIndicator: St.Widget<Clutter.LayoutManager, Clutter.Content>;
-		declare readonly _nextPageArrow: St.Button<Clutter.Actor<Clutter.LayoutManager, Clutter.Content>>;
-		declare readonly _prevPageArrow: St.Button<Clutter.Actor<Clutter.LayoutManager, Clutter.Content>>;
+		declare readonly _nextPageIndicator: St.Widget;
+		declare readonly _prevPageIndicator: St.Widget;
+		declare readonly _nextPageArrow: St.Button;
+		declare readonly _prevPageArrow: St.Button;
 		declare readonly _appGridLayout: AppDisplay.BaseAppViewGridLayout;
 		declare readonly _box: St.BoxLayout;
 		declare readonly _swipeTracker: undefined;
