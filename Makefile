@@ -1,7 +1,7 @@
 NAME=appfield
 DOMAIN=adilhanney.com
 
-.PHONY: compile bundle install debug clean
+.PHONY: compile bundle install debug lint clean
 
 compile: dist/extension.js dist/metadata.json dist/stylesheet.css dist/LICENSE dist/README.md
 
@@ -14,6 +14,9 @@ install: bundle
 
 debug: compile install
 	dbus-run-session gnome-shell --devkit --wayland
+
+lint: node_modules/.package-lock.json
+	npx oxlint
 
 clean:
 	@rm -rf dist/ node_modules/.package-lock.json $(NAME)@$(DOMAIN)*.zip *.tsbuildinfo

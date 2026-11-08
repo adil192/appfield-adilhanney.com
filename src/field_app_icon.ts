@@ -1,16 +1,13 @@
-import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
-import St from 'gi://St';
-import Shell from 'gi://Shell';
-
 import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 import * as AppMenu from 'resource:///org/gnome/shell/ui/appMenu.js';
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
-import type * as Dash from 'resource:///org/gnome/shell/ui/dash.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { AppFieldDisplay } from './app_display.js';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import type Shell from 'gi://Shell';
+import St from 'gi://St';
 
 // Copied from resource:///org/gnome/shell/ui/dash.js
 const DASH_ITEM_LABEL_SHOW_TIME = 150;
@@ -65,7 +62,7 @@ export const FieldAppIcon = GObject.registerClass(class FieldAppIcon extends App
 			Main.overview.connectObject('hiding',
 				() => this._menu!.close(BoxPointer.PopupAnimation.NONE), this);
 
-			Main.uiGroup.add_child(this._menu.actor);
+			Main.layoutManager.uiGroup.add_child(this._menu.actor);
 			this._menuManager.addMenu(this._menu);
 		}
 
@@ -91,6 +88,7 @@ export const FieldAppIcon = GObject.registerClass(class FieldAppIcon extends App
 	}
 	override getDragActor() {
 		// Override to use our icon size rather than dash's default size
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion (Type verified manually)
 		return this.app.create_icon_texture(this.icon.iconSize) as St.Icon;
 	}
 

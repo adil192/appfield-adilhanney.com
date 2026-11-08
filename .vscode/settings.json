@@ -3,4 +3,5 @@
 	"editor.indentSize": "tabSize",
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
+	"oxc.enable.oxfmt": false,
 }

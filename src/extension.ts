@@ -1,12 +1,11 @@
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 
+import { fadeIn, fadeOut } from './fade.js';
 import { AppFieldDisplay } from './app_display.js';
 import type { SearchController } from './search_controller.d.ts';
-import { fadeIn, fadeOut } from './fade.js';
 
 export default class AppFieldExtension extends Extension {
 	declare private appFieldDisplay?: typeof AppFieldDisplay.prototype;
@@ -15,10 +14,12 @@ export default class AppFieldExtension extends Extension {
 	declare private injectionManager?: InjectionManager;
 
 	override enable() {
+		// oxlint-disable-next-line typescript/no-this-alias unicorn/no-this-assignment
 		const ext = this;
 		this.appFieldDisplay = new AppFieldDisplay();
 
 		this.overviewControls = Main.overview._overview.controls;
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion (Type verified manually)
 		this.overviewLayoutManager = this.overviewControls.layout_manager as OverviewControls.ControlsManagerLayout;
 
 		this.overviewControls.add_child(this.appFieldDisplay);
@@ -29,7 +30,7 @@ export default class AppFieldExtension extends Extension {
 		this.injectionManager.overrideMethod(
 			OverviewControls.ControlsManager.prototype,
 			'_updateAppDisplayVisibility',
-			() => function (params) {
+			() => function _updateAppDisplayVisibility(params) {
 				params ??= this._stateAdjustment.getStateTransitionParams();
 
 				if (!ext.appFieldDisplay) return;
@@ -38,6 +39,7 @@ export default class AppFieldExtension extends Extension {
 				const state = initialState > finalState ? initialState : finalState;
 
 				ext.appFieldDisplay.visible = state > OverviewControls.ControlsState.WINDOW_PICKER
+					// oxlint-disable-next-line typescript/no-unsafe-type-assertion (Typescript GObjects are weird)
 					&& !(this._searchController as typeof SearchController.prototype)._searchActive;
 				if (ext.appFieldDisplay.visible) {
 					global.stage.set_key_focus(ext.appFieldDisplay);
@@ -49,11 +51,12 @@ export default class AppFieldExtension extends Extension {
 		this.injectionManager.overrideMethod(
 			OverviewControls.ControlsManager.prototype,
 			'_onSearchChanged',
-			originalFn => function () {
+			originalFn => function _onSearchChanged() {
 				originalFn.call(this);
 
 				if (!ext.appFieldDisplay) return;
 
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion (Typescript GObjects are weird)
 				const { searchActive } = this._searchController as typeof SearchController.prototype;
 
 				if (searchActive) {

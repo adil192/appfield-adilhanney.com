@@ -1,7 +1,7 @@
+import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
+
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
-
-import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
 
 /** Lays out its square children so they all fit on screen. */
 export const FieldLayoutManager = GObject.registerClass(
@@ -38,12 +38,12 @@ export const FieldLayoutManager = GObject.registerClass(
 		}
 
 		override vfunc_get_preferred_width(container: Clutter.Actor, for_height: number): [minimum: number, natural: number] {
-			const { child_size, cols, margins } = this._computeSizes(container, undefined, for_height);
+			const { child_size, cols, margins } = this._computeSizes(container, null, for_height);
 			const width = child_size * cols;
 			return [width, width + margins.horizontal * 2];
 		}
 		override vfunc_get_preferred_height(container: Clutter.Actor, for_width: number): [minimum: number, natural: number] {
-			const { child_size, rows, margins } = this._computeSizes(container, for_width, undefined);
+			const { child_size, rows, margins } = this._computeSizes(container, for_width, null);
 			const height = child_size * rows;
 			return [height, height + margins.vertical * 2];
 		}
@@ -54,12 +54,12 @@ export const FieldLayoutManager = GObject.registerClass(
 
 			const childBox = new Clutter.ActorBox();
 			for (let i = 0; i < children.length; ++i) {
-				const child = children[i];
+				const child = children[i]!;
 				const col = Math.floor(i / rows);
 				const row = i % rows;
 
 				const x = margins.horizontal + col * child_size;
-				const y = col % 2 == 0
+				const y = col % 2 === 0
 					? margins.vertical + row * child_size
 					: margins.vertical + (rows - 1 - row) * child_size
 
@@ -86,14 +86,14 @@ export const FieldLayoutManager = GObject.registerClass(
 			}
 		}
 
-		_computeSizes(container: Clutter.Actor, width?: number, height?: number, num_children?: number): typeof this._lastSizes {
-			if (!width || width <= 0) {
+		_computeSizes(container: Clutter.Actor, width: number | null, height: number | null, num_children?: number): typeof this._lastSizes {
+			if (width === null || width <= 0) {
 				if (container.has_allocation())
 					width = container.allocation.get_width();
 				else
 					width = this._lastSizes.cache_key.width ?? 1920;
 			}
-			if (!height || height <= 0) {
+			if (height === null || height <= 0) {
 				if (container.has_allocation())
 					height = container.allocation.get_height();
 				else
@@ -104,8 +104,8 @@ export const FieldLayoutManager = GObject.registerClass(
 			height = Math.round(height);
 			num_children ??= container.get_n_children();
 			if (width === this._lastSizes.cache_key.width &&
-				height == this._lastSizes.cache_key.height &&
-				num_children == this._lastSizes.cache_key.num_children) {
+				height === this._lastSizes.cache_key.height &&
+				num_children === this._lastSizes.cache_key.num_children) {
 				return this._lastSizes;
 			}
 
@@ -124,13 +124,13 @@ export const FieldLayoutManager = GObject.registerClass(
 				vertical: (height - child_size * rows) / 2,
 			};
 
-			return this._lastSizes = {
+			return (this._lastSizes = {
 				cache_key: { width, height, num_children },
 				child_size,
 				cols,
 				rows,
 				margins,
-			};
+			});
 		}
 
 		/**

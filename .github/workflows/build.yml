@@ -43,3 +43,6 @@ jobs:
           path: appfield@adilhanney.com.zip
           if-no-files-found: error
           archive: false
+
+      - name: Lints
+        run: make lint

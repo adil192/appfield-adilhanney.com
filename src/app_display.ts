@@ -1,22 +1,23 @@
-import Clutter from 'gi://Clutter';
-import Gio from 'gi://Gio';
-import GioUnix from 'gi://GioUnix';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import St from 'gi://St';
-import Shell from 'gi://Shell';
-
-import * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
-import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
+// oxlint-disable max-lines (This is a long file due to AppDisplay.AppDisplay being massive)
+import type * as AppDisplay from 'resource:///org/gnome/shell/ui/appDisplay.js';
+import type * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
-import * as IconGrid from 'resource:///org/gnome/shell/ui/iconGrid.js';
+import type * as IconGrid from 'resource:///org/gnome/shell/ui/iconGrid.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import type * as Overview from 'resource:///org/gnome/shell/ui/overview.js';
 import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
 
+import Clutter from 'gi://Clutter';
+import type Gio from 'gi://Gio';
+import type GioUnix from 'gi://GioUnix';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+
 import { fadeIn, fadeOut } from './fade.js';
-import { FieldLayoutManager } from './layout_manager.js';
 import { FieldAppIcon } from './field_app_icon.js';
+import { FieldLayoutManager } from './layout_manager.js';
 
 // Copied from resource:///org/gnome/shell/ui/dash.js
 const DASH_ITEM_HOVER_TIMEOUT = 300;
@@ -43,7 +44,7 @@ export const AppFieldDisplay = GObject.registerClass(
 		declare _onAppSystemChanged?: number;
 		declare _onAppFilterChanged?: number;
 
-		declare _appField: St.Widget<typeof FieldLayoutManager.prototype, Clutter.Content>;
+		declare _appField: St.Widget<typeof FieldLayoutManager.prototype>;
 		declare _items: Map<string, typeof FieldAppIcon.prototype>;
 		declare _appIcons: typeof FieldAppIcon.prototype[];
 		declare _appInfoList: GioUnix.DesktopAppInfo[];
@@ -56,7 +57,7 @@ export const AppFieldDisplay = GObject.registerClass(
 		 * - When false, the new tooltip will show after {@link DASH_ITEM_HOVER_TIMEOUT}.
 		 * - When true, the tooltip will be shown immediately.
 		 */
-		declare _tooltipShowing?: boolean;
+		declare _tooltipShowing: boolean;
 		declare _showTooltipTimeoutId?: number;
 		declare _resetTooltipShowingTimeoutId?: number;
 
@@ -103,18 +104,18 @@ export const AppFieldDisplay = GObject.registerClass(
 
 		_redisplay() {
 			const prevAppIcons = this._appIcons;
-			const prevAppIds = prevAppIcons.map(icon => icon.id);
+			const prevAppIds = new Set(prevAppIcons.map(icon => icon.id));
 			const nextAppIcons = this._loadApps();
-			const nextAppIds = nextAppIcons.map(icon => icon.id);
+			const nextAppIds = new Set(nextAppIcons.map(icon => icon.id));
 
-			const staleAppIcons = prevAppIcons.filter(icon => !nextAppIds.includes(icon.id));
-			const freshAppIcons = nextAppIcons.filter(icon => !prevAppIds.includes(icon.id));
+			const staleAppIcons = prevAppIcons.filter(icon => !nextAppIds.has(icon.id));
+			const freshAppIcons = nextAppIcons.filter(icon => !prevAppIds.has(icon.id));
 
 			const maybeFadeOut = (onComplete: () => void) => {
-				if (!staleAppIcons.length && !freshAppIcons.length) {
+				if (staleAppIcons.length === 0 && freshAppIcons.length === 0) {
 					// Same icons, don't fade out or fade in
 					onComplete();
-				} else if (!prevAppIcons.length) {
+				} else if (prevAppIcons.length === 0) {
 					// Apps list was empty, nothing to fade out
 					this._appField.opacity = 0;
 					onComplete();
@@ -133,7 +134,7 @@ export const AppFieldDisplay = GObject.registerClass(
 				// Apply new data
 				this._appIcons = nextAppIcons;
 				for (let i = 0; i < nextAppIcons.length; ++i) {
-					const appIcon = nextAppIcons[i];
+					const appIcon = nextAppIcons[i]!;
 					if (!freshAppIcons.includes(appIcon)) continue;
 					this._appField.insert_child_at_index(appIcon, i);
 					this._items.set(appIcon.id, appIcon);
@@ -145,12 +146,13 @@ export const AppFieldDisplay = GObject.registerClass(
 		}
 
 		_loadApps(): typeof FieldAppIcon.prototype[] {
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion (This is the correct type on Linux)
 			this._appInfoList = (this._appSystem.get_installed() as GioUnix.DesktopAppInfo[])
 				.filter(appInfo => {
 					try {
-						const appId = appInfo.get_id(); // catch invalid file encodings
-						if (!appId) return false;
-					} catch {
+						const appId = appInfo.get_id();
+						if (appId === null || appId.length === 0) return false;
+					} catch { // Catch invalid file encodings
 						return false;
 					}
 					return this._parentalControlsManager.shouldShowApp(appInfo);
@@ -191,11 +193,11 @@ export const AppFieldDisplay = GObject.registerClass(
 		override destroy() {
 			this._disconnectSignals();
 
-			if (this._showTooltipTimeoutId) {
+			if (this._showTooltipTimeoutId !== undefined) {
 				GLib.source_remove(this._showTooltipTimeoutId);
 				this._showTooltipTimeoutId = undefined;
 			}
-			if (this._resetTooltipShowingTimeoutId) {
+			if (this._resetTooltipShowingTimeoutId !== undefined) {
 				GLib.source_remove(this._resetTooltipShowingTimeoutId);
 				this._resetTooltipShowingTimeoutId = undefined;
 			}
@@ -234,11 +236,11 @@ export const AppFieldDisplay = GObject.registerClass(
 		 */
 		_syncTooltip(appIcon: typeof FieldAppIcon.prototype) {
 			if (appIcon.shouldShowTooltip()) {
-				if (this._resetTooltipShowingTimeoutId) {
+				if (this._resetTooltipShowingTimeoutId !== undefined) {
 					GLib.source_remove(this._resetTooltipShowingTimeoutId);
 					this._resetTooltipShowingTimeoutId = undefined;
 				}
-				if (!this._showTooltipTimeoutId) {
+				if (this._showTooltipTimeoutId === undefined) {
 					const timeout = this._tooltipShowing ? 0 : DASH_ITEM_HOVER_TIMEOUT;
 					this._showTooltipTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, timeout, () => {
 						this._tooltipShowing = true;
@@ -249,12 +251,12 @@ export const AppFieldDisplay = GObject.registerClass(
 					GLib.Source.set_name_by_id(this._showTooltipTimeoutId, '[appfield] appIcon.showTooltip');
 				}
 			} else {
-				if (this._showTooltipTimeoutId) {
+				if (this._showTooltipTimeoutId !== undefined) {
 					GLib.source_remove(this._showTooltipTimeoutId);
 					this._showTooltipTimeoutId = undefined;
 				}
 				appIcon.hideTooltip();
-				if (this._tooltipShowing && !this._resetTooltipShowingTimeoutId) {
+				if (this._tooltipShowing && this._resetTooltipShowingTimeoutId === undefined) {
 					this._resetTooltipShowingTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, DASH_ITEM_HOVER_TIMEOUT, () => {
 						this._tooltipShowing = false;
 						this._resetTooltipShowingTimeoutId = undefined;
@@ -292,7 +294,7 @@ export const AppFieldDisplay = GObject.registerClass(
 		_onScroll(_actor: St.ScrollView, _event: Clutter.ScrollEvent) { return false; }
 		_maybeMoveItem(_dragEvent: DND.DragEvent) { }
 		_onDragBegin(_overview?: any, _source?: any) { }
-		_onDragMotion(_dragEvent: DND.DragEvent) { return !!DND.DragMotionResult.NO_DROP; }
+		_onDragMotion(_dragEvent: DND.DragEvent) { return Boolean(DND.DragMotionResult.NO_DROP); }
 		_onDragEnd() { }
 		_onDragCancelled(_overview?: unknown, _source?: unknown) { }
 		animateSwitch(animationDirection: AnimationDirection): void {
@@ -364,7 +366,6 @@ export const AppFieldDisplay = GObject.registerClass(
 					this.disconnect(signalId);
 					this.selectApp(id);
 				});
-				return;
 			} else if (!item.mapped) {
 				// Need to wait until the view is mapped
 				const signalId = item.connect('notify::mapped', actor => {
@@ -373,7 +374,6 @@ export const AppFieldDisplay = GObject.registerClass(
 						this._selectAppInternal(id);
 					}
 				});
-				return;
 			} else {
 				this._selectAppInternal(id);
 			}
@@ -383,7 +383,7 @@ export const AppFieldDisplay = GObject.registerClass(
 
 /** https://github.com/GNOME/libadwaita/blob/6e88877f04c5b0eab434e50238ff8545a2506bbd/src/adw-tab-overview.c#L190 */
 declare const enum AnimationDirection {
-	ANIMATION_NONE,
-	ANIMATION_IN,
-	ANIMATION_OUT,
+	ANIMATION_NONE = 0,
+	ANIMATION_IN = 1,
+	ANIMATION_OUT = 2,
 };

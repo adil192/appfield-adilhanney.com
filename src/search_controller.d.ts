@@ -1,10 +1,10 @@
-import Clutter from 'gi://Clutter';
-import GObject from 'gi://GObject';
-import St from 'gi://St';
-
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import * as Search from 'resource:///org/gnome/shell/ui/search.js';
+import type * as Search from 'resource:///org/gnome/shell/ui/search.js';
 import * as ShellEntry from 'resource:///org/gnome/shell/ui/shellEntry.js';
+
+import type Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import type St from 'gi://St';
 
 /**
  * @see https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/searchController.js#L26
@@ -31,22 +31,18 @@ export const SearchController = GObject.registerClass({
 	_clickGesture: Clutter.ClickGesture;
 
 	/**
-	 * addProvider:
-	 *
 	 * Add a search provider to the controller.
 	 *
 	 * @param {object} provider - a search provider implementation
 	 */
-	addProvider(provider);
+	addProvider(provider: object);
 
 	/**
-	 * removeProvider:
-	 *
 	 * Remove a search provider from the controller.
 	 *
 	 * @param {object} provider - a search provider implementation
 	 */
-	removeProvider(provider);
+	removeProvider(provider: object);
 
 	get searchActive(): boolean;
 });
